@@ -1,18 +1,16 @@
-# create-svelte
+# Svelte Starter kit
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+This is a bare-bones starter template that uses...
 
-## Creating a project
+- Svelte + Sveltekit
+- Typescript
+- Tailwind for styles
 
-If you're seeing this, you've probably already done this step. Congrats!
+It has a few built-in utilities, like...
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+- sets of colors in `/src/utils/colors.ts`
+- a `writableStorage` utility in `/src/utils/storage.ts` that can be backed by LocalStorage or URL params
+- some basic UI components in `/src/components/_ui/`
 
 ## Developing
 
