@@ -1,0 +1,67 @@
+@import url('https://rsms.me/inter/inter.css');
+html {
+	font-family: 'Inter', sans-serif;
+}
+@supports (font-variation-settings: normal) {
+	html {
+		font-family: 'Inter var', sans-serif;
+	}
+}
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+	@apply font-sans;
+	@apply p-10;
+	letter-spacing: -0.016em;
+}
+
+::selection {
+	@apply bg-primary-lighter text-black;
+}
+
+h1 {
+	@apply text-6xl;
+	@apply font-black;
+	margin-bottom: 0.3em;
+}
+
+h2 {
+	@apply text-2xl;
+	@apply font-bold;
+	@apply mb-4;
+}
+
+h3 {
+	@apply text-xl;
+	@apply font-bold;
+	@apply mb-4;
+}
+
+a {
+	@apply text-primary;
+	@apply underline;
+}
+
+button {
+	@apply bg-primary;
+	@apply text-white;
+	@apply font-semibold;
+	padding: 0.5em 1em;
+	transition: all 0.2s ease-out;
+	box-shadow: #3f5740 1px 1px 0, #3f5740 2px 2px 0, #3f5740 3px 3px 0, #3f5740 4px 4px 0;
+}
+
+button:hover,
+button:focus {
+	@apply bg-primary-dark;
+	border-width: 0;
+	transform: translate(0.25rem, 0.25rem);
+	box-shadow: #3f5740 1px 1px 0;
+}
+
+p {
+	margin-bottom: 1.5em;
+}
