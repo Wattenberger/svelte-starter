@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { writable, type Writable } from 'svelte/store';
 
 type WritableStorageOptions = {
@@ -6,15 +7,15 @@ type WritableStorageOptions = {
 	urlParam?: boolean;
 };
 export type GetMyClassT<C extends Writable<any>> = C extends Writable<infer T> ? T : unknown;
-const writableStorage: <T>(
+export const writableStorage: <T>(
 	key: string,
 	initialValue: T,
 	options?: WritableStorageOptions
 ) => Writable<T> = (key, initialValue, options = {}) => {
 	const { localStorage = false, cookie = false, urlParam = false } = options;
-	const localStorageInitialValue = getFromLocalStorage(key);
-	const urlParamInitialValue = getFromUrlParam(key);
-	const cookieInitialValue = getFromCookie(key);
+	const localStorageInitialValue = localStorage ? getFromLocalStorage(key) : undefined;
+	const urlParamInitialValue = urlParam ? getFromUrlParam(key) : undefined;
+	const cookieInitialValue = cookie ? getFromCookie(key) : undefined;
 	const cascadedInitialValue =
 		localStorageInitialValue ?? urlParamInitialValue ?? cookieInitialValue ?? initialValue;
 	const value = writable(cascadedInitialValue);
@@ -25,6 +26,22 @@ const writableStorage: <T>(
 	});
 	return value;
 };
+export const writableStorageFromCallback = <T>(initialValue: T, callback: () => Promise<T>) => {
+	const updateValue = async () => {
+		try {
+			if (!browser) return;
+			const response = await callback();
+			value.set(response ?? initialValue);
+		} catch (e) {
+			value.set(initialValue);
+		}
+	};
+	const value = writable(initialValue);
+	updateValue();
+	value.updateWithCallback = updateValue;
+	return value;
+};
+
 const getFromLocalStorage = (key: string) => {
 	if (typeof localStorage === 'undefined') return;
 	try {
@@ -69,4 +86,34 @@ const setInCookie = (key: string, value: any, expires = 365) => {
 	const date = new Date();
 	date.setTime(date.getTime() + expires * 24 * 60 * 60 * 1000);
 	document.cookie = `${key}=${JSON.stringify(value)};expires=${date.toUTCString()};path=/`;
+};
+
+type HistoryValue<T> = Writable<T> & {
+	isPaused: boolean;
+	onGoToHistoryIndex: (index: number) => void;
+	onMoveInHistory: (diff: number) => void;
+};
+export const writableWithHistory = <T>(initialValue: T): HistoryValue<T> => {
+	const value = writable(initialValue) as HistoryValue<T>;
+	let history = [initialValue];
+	let historyIndex = 0;
+	value.isPaused = false;
+	value.subscribe((v) => {
+		if (value.isPaused) return;
+		history = [v, ...history];
+		historyIndex = 0;
+	});
+	value.onGoToHistoryIndex = (index: number) => {
+		if (value.isPaused) return;
+		value.isPaused = true;
+		historyIndex = index;
+		value.set(history[index]);
+		value.isPaused = false;
+	};
+	value.onMoveInHistory = (diff: number) => {
+		if (historyIndex + diff < 0) return;
+		if (historyIndex + diff >= history.length) return;
+		value.onGoToHistoryIndex(historyIndex + diff);
+	};
+	return value;
 };
